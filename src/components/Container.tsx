@@ -5,9 +5,10 @@ interface ContainerProps {
   children: ReactNode;
   title?: string;
   showLogo?: boolean;
+  card?: boolean;
 }
 
-export function Container({ children, title = "Gestão de Resíduos", showLogo = true }: ContainerProps) {
+export function Container({ children, title = "Gestão de Resíduos", showLogo = true, card = true}: ContainerProps) {
   return (
     <View>
       <ImageBackground source={require('../../assets/images/Fundo.jpg')} resizeMode="cover" style={styles.container}>
@@ -17,9 +18,13 @@ export function Container({ children, title = "Gestão de Resíduos", showLogo =
             <Text style={styles.title}>{title}</Text>
           </View>
         )}
-        <View style={styles.card}>
-          {children}
-        </View>
+        {card ? (
+          <View style={styles.card}>
+            {children}
+          </View>
+        ) : (
+          children
+        )}
       </ImageBackground>
     </View>
   );
@@ -37,7 +42,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 10,
     marginTop: 70,
-    marginBottom: 70,
   },
   logo: {
     width: 50,
@@ -52,6 +56,7 @@ const styles = StyleSheet.create({
   card: {
     width: 350,
     height: 400,
+    marginTop: 70,
     borderRadius: 25,
     padding: 20,
     backgroundColor: "rgba(255, 255, 255, 0.5)",

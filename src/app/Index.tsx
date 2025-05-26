@@ -16,7 +16,7 @@ export default function Index() {
             <Button 
                 icon={<MaterialIcons name="list-alt" size={20} color="#2B5B3F" />} 
                 label="Ver registros" 
-                onPress={() => navigation.navigate('records')} 
+                onPress={() => navigation.navigate('Consultar')} 
             />
             <Button 
                 icon={<Feather name="refresh-ccw" size={20} color="#2B5B3F" />} 

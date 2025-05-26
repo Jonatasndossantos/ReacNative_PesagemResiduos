@@ -1,104 +1,191 @@
 import { Campo } from '@/components/Campos';
 import { Container } from '@/components/Container';
-//import { ClienteDataBase } from '@/database/useClienteDataBase';
+import { fetchCategories, registerWaste } from '@/services/api';
 import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
-import { useState } from 'react';
-import { Alert, Button, StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
-export default function Index({ onChange }) {
-    const [id, setId] = useState("")
+interface CadastrarProps {
+    onChange?: (item: { label: string; value: number }) => void;
+}
+
+interface Category {
+    id: number;
+    nome: string;
+}
+
+export default function Index({ onChange }: CadastrarProps) {
     const [data, setData] = useState("")
-    const [categoria, setCategoria] = useState("")
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [peso, setPeso] = useState("")
-    //const ClienteDataBase = useClienteDataBase();
+    const [categories, setCategories] = useState<Array<{ label: string; value: number }>>([])
+    const [loading, setLoading] = useState(true)
+    const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+    const [selectedCategoryName, setSelectedCategoryName] = useState<string>("");
     const navigation = useNavigation();
 
-    const categorias = [
-        'Não reciclável', 'Reciclável', 'Óleo', 'Tampinhas plásticas',
-        'Lacres de alumínio', 'Tecidos', 'Meias', 'Material de escrita',
-        'Esponjas', 'Eletrônicos', 'Pilhas e baterias', 'Infectante',
-        'Químicos', 'Lâmpada fluorescente', 'Tonners de impressora',
-        'Esmaltes', 'Cosméticos', 'Cartela de medicamento'
-      ].map((item, index) => ({ label: item, value: String(index) }));
+    useEffect(() => {
+        loadCategories();
+    }, []);
 
-      const [value, setValue] = useState(null);
-    async function create(){
-        try{
-
-            const response = await ClienteDataBase.create({
-                data,
-                categoria,
-                peso
-            })
-
-            Alert.alert("Cliente cadastrado com sucesso! ID: " + response.insertedRowId)
-        }catch(error){
-            console.log(error)
+    async function loadCategories() {
+        try {
+            const result = await fetchCategories();
+            //console.log('Categories from API:', result);
+            const formattedCategories = result.map(cat => ({
+                label: cat.nome,
+                value: cat.id
+            }));
+            setCategories(formattedCategories);
+        } catch (error) {
+            console.error('Error loading categories:', error);
+            Alert.alert('Erro', 'Não foi possível carregar as categorias');
+        } finally {
+            setLoading(false);
         }
     }
 
-    
-    return (
-        
-        <Container title = "Registrar Resíduo">
-            <View style={styles.container}>
-            
-            <Campo icon={<AntDesign style={styles.calendar} name="calendar" size={20} color="#2B5B3F" /> } onChangeText={setData} value={data}/>
-            
-            <Dropdown
-               
-                style={styles.dropdown}
-                data={categorias}
-                labelField="label"
-                valueField="value"
-                placeholder="Selecione a categoria"                
-                placeholderStyle={styles.text}
-                selectedTextStyle={styles.text}
-                itemTextStyle={styles.text}
-                search
-                value={value}
-                onChange={item => {
-                setValue(item.value);
-                onChange?.(item);
-                }}
-            />
-            <Campo title={"Peso"} onChangeText={setPeso} value={peso}/>
+    const handleDateChange = (dateStr: string) => {
+        setData(dateStr);
+    };
 
-            <Button style={styles.bn} 
-            title="Registrar" 
-            onPress={() => console.log("Resíduo registrado")} 
-        />
-            </View>
-            </Container>
+    const handleDateSelect = (date: Date) => {
+        setSelectedDate(date);
+    };
 
-        
-        
-    );
-}
-    const styles = StyleSheet.create({
+    const handleWeightChange = (text: string) => {
+        setPeso(text);
+    };
 
-        dropdown:{
-            width: 300,
-            height:50,
-            fontSize: 5,
-            borderRadius: 10,
-            backgroundColor: "#EEF2ED",
-            margin: 10,
-        },
-        text:{ fontSize: 15, color: '#3D423D', marginLeft:14 },
-
-        calendar:{
-            marginLeft:10,
-           
-        },
-
-        bn:{
-            backgroundColor: "#2A5B3F"
+    async function handleSubmit() {
+        if (!data || !selectedCategory || !peso) {
+            Alert.alert("Erro", "Por favor preencha todos os campos");
+            return;
         }
 
+        // Validate weight format
+        const weightNum = parseFloat(peso);
+        if (isNaN(weightNum) || weightNum <= 0) {
+            Alert.alert("Erro", "Peso inválido. Digite um número maior que zero");
+            return;
+        }
 
+        try {
+            const response = await registerWaste({
+                data,
+                categoria: selectedCategoryName,
+                peso: `${weightNum.toFixed(3)}`
+            });
+
+            if (response.status === "created") {
+                Alert.alert("Sucesso", `Resíduo registrado com sucesso! ID: ${response.id}`);
+                setData("");
+                setSelectedDate(null);
+                setSelectedCategory(null);
+                setSelectedCategoryName("");
+                setPeso("");
+            } else {
+                Alert.alert("Erro", "Não foi possível registrar o resíduo");
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert("Erro", "Ocorreu um erro ao registrar o resíduo");
+        }
+    }
+
+    return (
+        <Container title="Registrar Resíduo">
+            <View style={styles.container}>
+                <Campo 
+                    type="date"
+                    icon={<AntDesign style={styles.calendar} name="calendar" size={20} color="#2B5B3F" />} 
+                    onChangeText={handleDateChange}
+                    onChangeDate={handleDateSelect}
+                    value={data}
+                />
+                
+                <Dropdown
+                    style={styles.dropdown}
+                    data={categories}
+                    labelField="label"
+                    valueField="value"
+                    placeholder={loading ? "Carregando categorias..." : "Selecione a categoria"}
+                    placeholderStyle={styles.text}
+                    selectedTextStyle={styles.text}
+                    itemTextStyle={styles.text}
+                    search
+                    searchPlaceholder="Buscar categoria..."
+                    value={selectedCategory}
+                    onChange={item => {
+                        setSelectedCategory(item.value);
+                        setSelectedCategoryName(item.label);
+                        onChange?.(item);
+                    }}
+                    disable={loading}
+                />
+
+                <Campo 
+                    type="weight"
+                    onChangeText={handleWeightChange}
+                    value={peso}
+                />
+
+                <TouchableOpacity 
+                    style={styles.button} 
+                    onPress={handleSubmit}
+                >
+                    <Text style={styles.buttonText}>Registrar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    style={styles.button} 
+                    onPress={() => navigation.navigate('Index')}
+                >
+                    <Text style={styles.buttonText}>Voltar</Text>
+                </TouchableOpacity>
+            </View>
+        </Container>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        padding: 20,
+        alignItems: 'center',
+    },
+    dropdown: {
+        width: 300,
+        height: 50,
+        fontSize: 5,
+        borderRadius: 10,
+        backgroundColor: "#EEF2ED",
+        margin: 10,
+    },
+    text: { 
+        fontSize: 15, 
+        color: '#3D423D', 
+        marginLeft: 14 
+    },
+    calendar: {
+        marginLeft: 10,
+    },
+    button: {
+        backgroundColor: "#2A5B3F",
+        width: 300,
+        height: 50,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    buttonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+    }
 });
 
 
