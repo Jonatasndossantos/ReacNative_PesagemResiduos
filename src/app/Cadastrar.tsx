@@ -76,7 +76,7 @@ export default function Index({ onChange }: CadastrarProps) {
             const response = await registerWaste({
                 data,
                 categoria: selectedCategoryName,
-                peso: `${weightNum.toFixed(3)}`
+                peso: weightNum
             });
 
             if (response.status === "created") {

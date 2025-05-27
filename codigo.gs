@@ -29,10 +29,27 @@ function listarRegistros() {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// Cria um novo registro na aba "Registros" com ID autoincrementado
+// Cria um novo registro na aba "Registros" com ID autoincrementado OU atualiza um existente
 function doPost(request) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Registros");
   const dados = JSON.parse(request.postData.contents);
+  
+  // Se tem _method: 'put', é uma atualização
+  if (dados._method === 'put') {
+    return atualizarRegistro(dados);
+  }
+  
+  // Se tem _method: 'delete', é uma exclusão
+  if (dados._method === 'delete') {
+    return excluirRegistro(dados);
+  }
+  
+  // Caso contrário, é uma criação
+  return criarRegistro(dados);
+}
+
+// Função para criar novo registro
+function criarRegistro(dados) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Registros");
   const linhas = sheet.getDataRange().getValues();
 
   let novoId = 1;
@@ -55,21 +72,21 @@ function doPost(request) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// Atualiza um registro existente na aba "Registros"
-function doPut(request) {
-  const dados = JSON.parse(request.postData.contents);
+// Função para atualizar registro existente
+function atualizarRegistro(dados) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Registros");
   const linhas = sheet.getDataRange().getValues();
 
   for (let i = 1; i < linhas.length; i++) {
     if (linhas[i][0] == dados.id) {
+      const agora = new Date().toISOString();
       sheet.getRange(i + 1, 2, 1, 4).setValues([[
         dados.data,
         dados.categoria,
         dados.peso,
-        new Date().toISOString()
+        agora
       ]]);
-      return ContentService.createTextOutput(JSON.stringify({ status: "updated" }))
+      return ContentService.createTextOutput(JSON.stringify({ status: "updated", id: dados.id }))
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
@@ -78,9 +95,8 @@ function doPut(request) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// Exclui um registro da aba "Registros" pelo ID
-function doDelete(request) {
-  const dados = JSON.parse(request.postData.contents);
+// Função para excluir registro
+function excluirRegistro(dados) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Registros");
   const linhas = sheet.getDataRange().getValues();
 
@@ -94,6 +110,18 @@ function doDelete(request) {
 
   return ContentService.createTextOutput(JSON.stringify({ status: "not found" }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Atualiza um registro existente na aba "Registros" (método PUT original)
+function doPut(request) {
+  const dados = JSON.parse(request.postData.contents);
+  return atualizarRegistro(dados);
+}
+
+// Exclui um registro da aba "Registros" pelo ID (método DELETE original)
+function doDelete(request) {
+  const dados = JSON.parse(request.postData.contents);
+  return excluirRegistro(dados);
 }
 
 // Lista todas as categorias ativas (ativa == 1)

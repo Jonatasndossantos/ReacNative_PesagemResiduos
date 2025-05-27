@@ -1,17 +1,17 @@
 import { Container } from '@/components/Container';
 import { ResidueItem } from '@/components/ResidueItem';
-import { fetchCategories, fetchWasteRecords } from '@/services/api';
+import { deleteWasteRecord, fetchCategories, fetchWasteRecords } from '@/services/api';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
 interface WasteRecord {
     id: number;
     data: string;
     categoria: string;
-    peso: string;
+    peso: number;
     atualizado_em: string;
 }
 
@@ -72,6 +72,32 @@ export default function Consultar() {
         loadData();
     };
 
+    async function handleDelete(id: number, categoria: string) {
+        Alert.alert(
+            'Confirmar exclusão',
+            `Tem certeza que deseja excluir o registro de ${categoria}?`,
+            [
+                {
+                    text: 'Cancelar',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Excluir',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await deleteWasteRecord(id);
+                            await loadData();
+                            Alert.alert('Sucesso', 'Registro excluído com sucesso!');
+                        } catch (error) {
+                            Alert.alert('Erro', 'Não foi possível excluir o registro');
+                        }
+                    },
+                },
+            ]
+        );
+    }
+
     if (loading) {
         return (
             <Container card={false}>
@@ -111,9 +137,11 @@ export default function Consultar() {
                         renderItem={({ item }) => (
                             <ResidueItem 
                                 data={item}
-                                onPress={() => {
-                                    // Implementar visualização detalhada
+                                onEdit={() => {
+                                    // Navigate to update page - this will be fixed when navigation types are updated
+                                    (navigation as any).navigate('Atualizar', { item: JSON.stringify(item) });
                                 }}
+                                onDelete={() => handleDelete(item.id, item.categoria)}
                             />
                         )}
                         contentContainerStyle={styles.list}
