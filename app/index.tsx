@@ -1,11 +1,12 @@
-import { Button } from '@/components/Button';
-import { Container } from '@/components/Container';
+import { Button } from '../components/Button';
+import { Container } from '../components/Container';
 import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
+import "expo-router/entry";
 
 export default function Index() {
-    const navigation = useNavigation();
+    const rota = useRouter();
 
     return (
         <Container card={false}>
@@ -13,17 +14,17 @@ export default function Index() {
                 <Button 
                     icon={<AntDesign name="plus" size={20} color="#2B5B3F" />} 
                     label="Registrar novo resíduo" 
-                    onPress={() => (navigation as any).navigate('Cadastrar')} 
+                    onPress={() => rota.push('/cadastrar')} 
                 />
                 <Button 
                     icon={<MaterialIcons name="list-alt" size={20} color="#2B5B3F" />} 
                     label="Ver registros" 
-                    onPress={() => (navigation as any).navigate('Consultar')} 
+                    onPress={() => rota.push('/consultar')} 
                 />
                 <Button 
                     icon={<Feather name="settings" size={20} color="#2B5B3F" />} 
                     label="Configurações" 
-                    onPress={() => (navigation as any).navigate('Configuracoes')} 
+                    onPress={() => rota.push('/configuracoes')} 
                 />
             </View>
         </Container>

@@ -1,0 +1,13 @@
+import {Stack} from 'expo-router'
+
+export default function Layout(){
+    return(
+        <Stack>
+            <Stack.Screen name='index' options={{ headerShown: false}}/>
+            <Stack.Screen name='atualizar' options={{ headerShown: false}}/>
+            <Stack.Screen name='cadastrar' options={{ headerShown: false}}/>
+            <Stack.Screen name='configuracoes' options={{ headerShown: false}}/>
+            <Stack.Screen name='consultar' options={{ headerShown: false}}/>
+        </Stack>
+    )
+}

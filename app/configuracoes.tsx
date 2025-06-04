@@ -1,5 +1,5 @@
-import { Container } from '@/components/Container';
-import { fetchWasteRecords } from '@/services/api';
+import { Container } from '../components/Container';
+import { fetchWasteRecords } from '../services/api';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as Print from 'expo-print';

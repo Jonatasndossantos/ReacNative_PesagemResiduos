@@ -1,8 +1,8 @@
-import { Campo } from '@/components/Campos';
-import { Container } from '@/components/Container';
-import { fetchCategories, registerWaste } from '@/services/api';
+import { Campo } from '../components/Campos';
+import { Container } from '../components/Container';
+import { fetchCategories, registerWaste } from '../services/api';
 import { AntDesign } from '@expo/vector-icons';
-import { useNavigation } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -24,7 +24,7 @@ export default function Index({ onChange }: CadastrarProps) {
     const [loading, setLoading] = useState(true)
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [selectedCategoryName, setSelectedCategoryName] = useState<string>("");
-    const navigation = useNavigation();
+    const navigation = useRouter();
 
     useEffect(() => {
         loadCategories();

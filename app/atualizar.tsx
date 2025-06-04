@@ -1,14 +1,14 @@
-import { Campo } from '@/components/Campos'
-import { Container } from '@/components/Container'
-import { fetchCategories, updateWasteRecord } from '@/services/api'
+import { Campo } from '../components/Campos'
+import { Container } from '../components/Container'
+import { fetchCategories, updateWasteRecord } from '../services/api'
 import { AntDesign } from '@expo/vector-icons'
-import { useLocalSearchParams, useNavigation } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Dropdown } from 'react-native-element-dropdown'
 
 export default function Atualizar() {
-    const navigation = useNavigation()
+    const rota = useRouter()
     const { item } = useLocalSearchParams<{ item: string }>()
     const parsedItem = typeof item === 'string' ? JSON.parse(item) : item
 
@@ -54,7 +54,7 @@ export default function Atualizar() {
                 peso: weightNum // Send as number, not string
             })
             Alert.alert('Sucesso', 'Registro atualizado com sucesso!', [
-                { text: 'OK', onPress: () => navigation.goBack() }
+                { text: 'OK', onPress: () => rota.push('/') }
             ])
         } catch (error) {
             Alert.alert('Erro', 'Não foi possível atualizar o registro')
@@ -91,7 +91,7 @@ export default function Atualizar() {
                 <TouchableOpacity style={styles.button} onPress={handleUpdate}>
                     <Text style={styles.buttonText}>Salvar</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
+                <TouchableOpacity style={styles.button} onPress={() => rota.back()}>
                     <Text style={styles.buttonText}>Voltar</Text>
                 </TouchableOpacity>
             </View>

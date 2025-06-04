@@ -1,8 +1,8 @@
-import { Container } from '@/components/Container';
-import { ResidueItem } from '@/components/ResidueItem';
+import { Container } from '../components/Container';
+import { ResidueItem } from '../components/ResidueItem';
 import { deleteWasteRecord, fetchCategories, fetchWasteRecords } from '@/services/api';
 import { Feather } from '@expo/vector-icons';
-import { useNavigation } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -22,7 +22,7 @@ export default function Consultar() {
     const [categories, setCategories] = useState<Array<{ label: string; value: string }>>([]);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     
-    const navigation = useNavigation();
+    const rota = useRouter();
 
     const loadData = useCallback(async () => {
         try {
@@ -138,8 +138,8 @@ export default function Consultar() {
                             <ResidueItem 
                                 data={item}
                                 onEdit={() => {
-                                    // Navigate to update page - this will be fixed when navigation types are updated
-                                    (navigation as any).navigate('Atualizar', { item: JSON.stringify(item) });
+                                    // Navigate to update page - this will be fixed when rota types are updated
+                                    rota.push({ pathname:'/atualizar', params: JSON.stringify(item) })
                                 }}
                                 onDelete={() => handleDelete(item.id, item.categoria)}
                             />
@@ -160,7 +160,7 @@ export default function Consultar() {
                 <View style={styles.footer}>
                     <TouchableOpacity 
                         style={styles.button}
-                        onPress={() => navigation.navigate('Index')}
+                        onPress={() => rota.push('/index')}
                     >
                         <Text style={styles.buttonText}>Voltar</Text>
                     </TouchableOpacity>
@@ -181,7 +181,6 @@ const styles = StyleSheet.create({
     header: {
         paddingTop: 20,
         paddingHorizontal: 20,
-        backgroundColor: "rgba(255, 255, 255, 0.5)",
         zIndex: 1,
     },
     content: {
@@ -189,7 +188,6 @@ const styles = StyleSheet.create({
     },
     footer: {
         padding: 20,
-        backgroundColor: "rgba(255, 255, 255, 0.5)",
     },
     filterContainer: {
         marginBottom: 16,
